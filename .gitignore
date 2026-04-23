@@ -1,0 +1,12 @@
+node_modules/
+dist/
+dist-ssr/
+*.local
+.DS_Store
+
+# docs/ is intentionally NOT gitignored — it is the committed build output
+# that GitHub Pages serves. Only the nested planning subdirectory is ignored.
+
+# Local tooling / planning artifacts we don't want published.
+.superpowers/
+docs/superpowers/
