@@ -3,6 +3,9 @@
 import { pluralize, ing, past } from './inflect.js';
 
 const PLACEHOLDER = /\{([^{}]+)\}/g;
+const MAX_DEPTH = 5;
+
+export class RecursionError extends Error {}
 
 function parsePlaceholder(inner) {
   if (inner === 'a/an') return { kind: 'article' };
@@ -28,7 +31,12 @@ function applyModifier(word, category, modifier, irregulars) {
   throw new Error(`unknown modifier: ${category}:${modifier}`);
 }
 
-export function resolveTopLevel(template, data, rand = Math.random) {
+function containsPlaceholder(s) {
+  return s.includes('{');
+}
+
+function resolveOnce(template, data, rand, depth) {
+  if (depth > MAX_DEPTH) throw new RecursionError();
   return template.replace(PLACEHOLDER, (_match, inner) => {
     const p = parsePlaceholder(inner);
     if (p.kind === 'article') {
@@ -36,7 +44,14 @@ export function resolveTopLevel(template, data, rand = Math.random) {
     }
     const list = data.words[p.category];
     if (!list) throw new Error(`unknown category: ${p.category}`);
-    const word = pickFrom(list, rand);
+    let word = pickFrom(list, rand);
+    if (containsPlaceholder(word)) {
+      word = resolveOnce(word, data, rand, depth + 1);
+    }
     return applyModifier(word, p.category, p.modifier, data.irregulars);
   });
+}
+
+export function resolveTopLevel(template, data, rand = Math.random) {
+  return resolveOnce(template, data, rand, 0);
 }

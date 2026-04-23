@@ -59,3 +59,54 @@ test('unknown modifier throws', () => {
 test('incompatible modifier/category throws', () => {
   assert.throws(() => resolveTopLevel('{noun:ing}', modData, pickFirst), /unknown modifier/i);
 });
+
+// Scripted rand for multi-step determinism.
+function scriptedRand(sequence) {
+  let i = 0;
+  return () => {
+    const v = sequence[i % sequence.length];
+    i += 1;
+    return v;
+  };
+}
+
+test('nested: drawn word containing {...} is resolved recursively', () => {
+  const data = {
+    words: {
+      noun:      ['{adjective} cat'],
+      adjective: ['tiny'],
+      verb: [], adverb: [], color: [], preposition: [], person: [],
+    },
+    irregulars: { plurals: {}, past: {}, ing: {}, articles: {} },
+  };
+  assert.equal(resolveTopLevel('{noun}', data, pickFirst), 'tiny cat');
+});
+
+test('nested: 3-deep recursion works', () => {
+  const data = {
+    words: {
+      // indices:  0         1         2
+      noun:      ['{noun}', '{noun}', 'dog'],
+      adjective: [], verb: [], adverb: [], color: [], preposition: [], person: [],
+    },
+    irregulars: { plurals: {}, past: {}, ing: {}, articles: {} },
+  };
+  // Sequence resolves: 0 -> 0 -> 2 (dog).
+  // rand returns a value in [0,1); Math.floor(v * 3) = index.
+  // Use values 0.0, 0.0, 0.67 to produce indices 0, 0, 2.
+  const rand = scriptedRand([0.0, 0.0, 0.67]);
+  assert.equal(resolveTopLevel('{noun}', data, rand), 'dog');
+});
+
+test('nested: modifier applies to the fully-resolved string', () => {
+  const data = {
+    words: {
+      noun: ['{adjective} cat'],
+      adjective: ['shiny'],
+      verb: [], adverb: [], color: [], preposition: [], person: [],
+    },
+    irregulars: { plurals: {}, past: {}, ing: {}, articles: {} },
+  };
+  // Spec-documented behavior: :plural applies to "shiny cat" as a whole.
+  assert.equal(resolveTopLevel('{noun:plural}', data, pickFirst), 'shiny cats');
+});
