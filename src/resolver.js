@@ -1,5 +1,7 @@
 // Template resolver. Pure functions; no DOM, no Alpine, no fetch.
 
+import { pluralize, ing, past } from './inflect.js';
+
 const PLACEHOLDER = /\{([^{}]+)\}/g;
 
 function parsePlaceholder(inner) {
@@ -18,6 +20,14 @@ function pickFrom(list, rand) {
   return list[i];
 }
 
+function applyModifier(word, category, modifier, irregulars) {
+  if (modifier === null) return word;
+  if (category === 'noun' && modifier === 'plural') return pluralize(word, irregulars);
+  if (category === 'verb' && modifier === 'ing')    return ing(word, irregulars);
+  if (category === 'verb' && modifier === 'past')   return past(word, irregulars);
+  throw new Error(`unknown modifier: ${category}:${modifier}`);
+}
+
 export function resolveTopLevel(template, data, rand = Math.random) {
   return template.replace(PLACEHOLDER, (_match, inner) => {
     const p = parsePlaceholder(inner);
@@ -26,6 +36,7 @@ export function resolveTopLevel(template, data, rand = Math.random) {
     }
     const list = data.words[p.category];
     if (!list) throw new Error(`unknown category: ${p.category}`);
-    return pickFrom(list, rand);
+    const word = pickFrom(list, rand);
+    return applyModifier(word, p.category, p.modifier, data.irregulars);
   });
 }
