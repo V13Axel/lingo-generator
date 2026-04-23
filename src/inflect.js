@@ -54,6 +54,24 @@ export function past(verb, irregulars) {
   return verb + 'ed';
 }
 
+/**
+ * Choose "a" or "an" based on the initial sound of the next word.
+ * - Empty / falsy input returns "a".
+ * - `irregulars.articles[lowercase word]` overrides everything.
+ * - Otherwise, pick based on the first letter (skipping any leading
+ *   non-letter characters).
+ */
+export function aAn(nextWord, irregulars) {
+  if (!nextWord) return 'a';
+  const lower = nextWord.toLowerCase();
+  if (irregulars?.articles && irregulars.articles[lower]) {
+    return irregulars.articles[lower];
+  }
+  const firstLetter = lower.match(/[a-z]/)?.[0];
+  if (!firstLetter) return 'a';
+  return isVowel(firstLetter) ? 'an' : 'a';
+}
+
 function isVowel(ch) {
   return VOWELS.has(ch.toLowerCase());
 }

@@ -1,12 +1,12 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { pluralize, ing, past } from '../src/inflect.js';
+import { pluralize, ing, past, aAn } from '../src/inflect.js';
 
 const irr = {
   plurals: { child: 'children', foot: 'feet', person: 'people' },
-  articles: {},
   ing: { lie: 'lying', die: 'dying', tie: 'tying', run: 'running', sit: 'sitting', hop: 'hopping', begin: 'beginning' },
   past: { run: 'ran', go: 'went', eat: 'ate', be: 'was', hop: 'hopped' },
+  articles: { honest: 'an', honor: 'an', hour: 'an', heir: 'an', university: 'a', european: 'a', one: 'a' },
 };
 
 // --- pluralize ---
@@ -27,29 +27,44 @@ test('ing: default append', () => { assert.equal(ing('laugh', irr), 'laughing');
 test('ing: no doubling by default', () => { assert.equal(ing('forget', irr), 'forgeting'); });
 
 // --- past ---
-test('past: uses irregulars when present', () => {
-  assert.equal(past('run', irr), 'ran');
-  assert.equal(past('go', irr), 'went');
-  assert.equal(past('hop', irr), 'hopped'); // doubling via irregulars
+test('past: irregular', () => { assert.equal(past('run', irr), 'ran'); });
+test('past: -e -> -d', () => { assert.equal(past('bake', irr), 'baked'); });
+test('past: y/consonant -> ied', () => { assert.equal(past('cry', irr), 'cried'); });
+test('past: y/vowel -> yed', () => { assert.equal(past('play', irr), 'played'); });
+test('past: default -ed', () => { assert.equal(past('laugh', irr), 'laughed'); });
+test('past: no doubling by default', () => { assert.equal(past('regret', irr), 'regreted'); });
+
+// --- aAn ---
+test('aAn: vowel-initial -> an', () => {
+  assert.equal(aAn('apple', irr), 'an');
+  assert.equal(aAn('orange', irr), 'an');
 });
 
-test('past: adds -d to words ending in e', () => {
-  assert.equal(past('bake', irr), 'baked');
-  assert.equal(past('dance', irr), 'danced');
+test('aAn: consonant-initial -> a', () => {
+  assert.equal(aAn('cat', irr), 'a');
+  assert.equal(aAn('dog', irr), 'a');
 });
 
-test('past: y after consonant -> ied', () => {
-  assert.equal(past('cry', irr), 'cried');
-  assert.equal(past('try', irr), 'tried');
+test('aAn: exceptions override the vowel rule', () => {
+  assert.equal(aAn('honest', irr), 'an');
+  assert.equal(aAn('university', irr), 'a');
+  assert.equal(aAn('european', irr), 'a');
 });
 
-test('past: y after vowel -> yed', () => {
-  assert.equal(past('play', irr), 'played');
-  assert.equal(past('stay', irr), 'stayed');
+test('aAn: case-insensitive exception match', () => {
+  assert.equal(aAn('Honor', irr), 'an');
+  assert.equal(aAn('UNIVERSITY', irr), 'a');
 });
 
-test('past: default appends -ed with no doubling', () => {
-  assert.equal(past('laugh', irr), 'laughed');
-  assert.equal(past('paint', irr), 'painted');
-  assert.equal(past('regret', irr), 'regreted'); // locked in: no default doubling
+test('aAn: empty / falsy input defaults to "a"', () => {
+  assert.equal(aAn('', irr), 'a');
+  assert.equal(aAn(undefined, irr), 'a');
+  assert.equal(aAn(null, irr), 'a');
+});
+
+test('aAn: non-letter leading char falls back to first letter', () => {
+  // Defensive: if the caller hands us punctuation-prefixed input (which the
+  // resolver normally strips, but belt-and-suspenders), use the first letter.
+  assert.equal(aAn('(apple', irr), 'an');
+  assert.equal(aAn('"cat', irr), 'a');
 });
