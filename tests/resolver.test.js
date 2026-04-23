@@ -110,3 +110,50 @@ test('nested: modifier applies to the fully-resolved string', () => {
   // Spec-documented behavior: :plural applies to "shiny cat" as a whole.
   assert.equal(resolveTopLevel('{noun:plural}', data, pickFirst), 'shiny cats');
 });
+
+test('recursion: pathological self-reference falls back to flat mode', () => {
+  const data = {
+    words: {
+      // index 2 is the only plain string.
+      noun: ['{noun}', '{noun}', 'stone'],
+      adjective: [], verb: [], adverb: [], color: [], preposition: [], person: [],
+    },
+    irregulars: { plurals: {}, past: {}, ing: {}, articles: {} },
+  };
+  // Force every draw to index 0 during normal attempts -> all 10 attempts
+  // exhaust the cap -> flat mode must pick from plain strings only -> "stone".
+  const rand = () => 0;
+  assert.equal(resolveTopLevel('{noun}', data, rand), 'stone');
+});
+
+test('recursion: deterministic flat-mode fallback with no plain strings', () => {
+  // When a list is entirely templates and flat mode still has to draw,
+  // the implementation strips braces from the pick as a last resort so
+  // nothing ever leaks to the UI.
+  const data = {
+    words: {
+      noun: ['{noun}'],
+      adjective: [], verb: [], adverb: [], color: [], preposition: [], person: [],
+    },
+    irregulars: { plurals: {}, past: {}, ing: {}, articles: {} },
+  };
+  const out = resolveTopLevel('{noun}', data, () => 0);
+  assert.ok(!out.includes('{'), `leaked brace: ${out}`);
+  assert.ok(!out.includes('}'), `leaked brace: ${out}`);
+});
+
+test('recursion: output never contains raw braces (stress test)', () => {
+  const data = {
+    words: {
+      noun: ['{noun}', '{adjective} {noun}', 'rock'],
+      adjective: ['{adjective}', 'big'],
+      verb: [], adverb: [], color: [], preposition: [], person: [],
+    },
+    irregulars: { plurals: {}, past: {}, ing: {}, articles: {} },
+  };
+  for (let i = 0; i < 200; i++) {
+    const out = resolveTopLevel('{noun}', data);
+    assert.ok(!out.includes('{'), `leaked '{' in: ${out}`);
+    assert.ok(!out.includes('}'), `leaked '}' in: ${out}`);
+  }
+});
