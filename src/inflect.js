@@ -39,6 +39,21 @@ export function ing(verb, irregulars) {
   return verb + 'ing';
 }
 
+/**
+ * Return the simple past tense of a verb.
+ * Consults `irregulars.past` first. The default rule handles -e, -y after
+ * consonant, and falls back to -ed. Doubling is intentionally never done
+ * by default (same rationale as `ing`).
+ */
+export function past(verb, irregulars) {
+  if (irregulars?.past && irregulars.past[verb]) {
+    return irregulars.past[verb];
+  }
+  if (verb.endsWith('e')) return verb + 'd';
+  if (/[^aeiou]y$/i.test(verb)) return verb.slice(0, -1) + 'ied';
+  return verb + 'ed';
+}
+
 function isVowel(ch) {
   return VOWELS.has(ch.toLowerCase());
 }
