@@ -1,0 +1,29 @@
+@import "tailwindcss";
+
+/* Accent color exposed as a CSS custom property so the theme can be swapped
+   later without touching markup. The checkbox and button both read this. */
+:root {
+  --accent: #4f46e5;        /* indigo-600 */
+  --accent-fg: #ffffff;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --accent: #818cf8;      /* indigo-400 */
+    --accent-fg: #111827;   /* slate-900 */
+  }
+}
+
+/* v4 custom utilities via @utility (not @layer utilities, which is v3 syntax). */
+@utility bg-accent {
+  background-color: var(--accent);
+}
+@utility text-accent-fg {
+  color: var(--accent-fg);
+}
+@utility ring-accent {
+  --tw-ring-color: var(--accent);
+}
+/* Lets <input type="checkbox"> render its native accent in our theme color. */
+@utility accent-themed {
+  accent-color: var(--accent);
+}
