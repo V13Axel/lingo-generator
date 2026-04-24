@@ -1,0 +1,11 @@
+[
+  "{a/an} {adjective} {noun}",
+  "{a/an} {color} {noun}",
+  "{a/an} {adjective} {color} {noun}",
+  "the last {noun}",
+  "{a/an} {noun} shaped like {a/an} {noun}",
+  "{a/an} {adjective} pair of {noun:plural}",
+  "a bucket of {noun:plural}",
+  "{a/an} {noun} from another era",
+  "{a/an} {adjective} {noun} that won't stop {verb:ing}"
+]

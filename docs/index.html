@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Lingo Generator</title>
+    <style>
+      [x-cloak] { display: none !important; }
+      @keyframes fade-in {
+        from { opacity: 0; transform: translateY(-4px); }
+        to   { opacity: 1; transform: translateY(0); }
+      }
+      .fade-in { animation: fade-in 150ms ease-out; }
+    </style>
+    <script type="module" crossorigin src="/lingo-generator/assets/index-CK6mfe6N.js"></script>
+    <link rel="stylesheet" crossorigin href="/lingo-generator/assets/index-BeNADC7A.css">
+  </head>
+  <body class="min-h-screen bg-slate-50 text-slate-900 dark:bg-slate-900 dark:text-slate-100">
+    <main
+      x-data="lingoApp"
+      x-cloak
+      class="mx-auto max-w-5xl p-4 sm:p-6 flex flex-col md:flex-row gap-6"
+    >
+      <!-- Sidebar -->
+      <aside class="md:w-64 shrink-0 space-y-4">
+        <header>
+          <h1 class="text-xl font-bold">Lingo Generator</h1>
+          <p class="text-sm text-slate-500 dark:text-slate-400">
+            Random prompts for Tomodachi Life conversations.
+          </p>
+        </header>
+
+        <fieldset class="space-y-1">
+          <legend class="text-sm font-semibold mb-1">Categories</legend>
+          <label class="flex items-center gap-2">
+            <input type="checkbox" x-model="categories.person" class="accent-themed" />
+            <span>A person</span>
+          </label>
+          <label class="flex items-center gap-2">
+            <input type="checkbox" x-model="categories.item" class="accent-themed" />
+            <span>An item</span>
+          </label>
+          <label class="flex items-center gap-2">
+            <input type="checkbox" x-model="categories.activity" class="accent-themed" />
+            <span>An activity</span>
+          </label>
+          <label class="flex items-center gap-2">
+            <input type="checkbox" x-model="categories['something-else']" class="accent-themed" />
+            <span>Something else</span>
+          </label>
+        </fieldset>
+
+        <div class="space-y-2">
+          <button
+            class="w-full bg-accent text-accent-fg px-4 py-2 rounded font-medium
+                   disabled:opacity-50 disabled:cursor-not-allowed
+                   focus:outline-none focus:ring-2 ring-accent"
+            :disabled="!canSuggest"
+            @click="suggest()"
+            x-text="loading ? 'Loading…' : 'Suggest'"
+          ></button>
+          <p
+            x-show="!loading && !error && !anyCategoryChecked"
+            class="text-xs text-slate-500 dark:text-slate-400"
+          >Pick at least one category.</p>
+        </div>
+
+        <div>
+          <button
+            class="text-xs text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 underline"
+            @click="clearHistory()"
+          >Clear history</button>
+        </div>
+
+        <footer class="text-xs text-slate-400 pt-4">
+          <a
+            class="hover:text-slate-600 dark:hover:text-slate-300 underline"
+            href="https://github.com/V13Axel/lingo-generator"
+          >GitHub</a>
+        </footer>
+      </aside>
+
+      <!-- Main -->
+      <section class="flex-1 min-w-0">
+        <p x-show="loading" class="text-slate-500 dark:text-slate-400">Loading word lists…</p>
+        <p x-show="error" x-text="error" class="text-red-600 dark:text-red-400"></p>
+
+        <div
+          x-show="!loading && !error && history.length === 0"
+          class="text-slate-500 dark:text-slate-400"
+        >
+          Pick one or more categories, then click Suggest.
+        </div>
+
+        <ul
+          x-show="!loading && !error && history.length > 0"
+          aria-live="polite"
+          class="space-y-2"
+        >
+          <template x-for="(item, idx) in history" :key="item.id">
+            <li
+              class="flex items-baseline justify-between gap-4 p-2 rounded
+                     bg-white dark:bg-slate-800 shadow-sm"
+              :class="idx === 0 ? 'fade-in' : ''"
+            >
+              <span x-text="item.phrase" class="break-words"></span>
+              <span
+                class="text-xs text-slate-500 dark:text-slate-400 shrink-0"
+                x-text="'· ' + categoryLabel(item.category)"
+              ></span>
+            </li>
+          </template>
+        </ul>
+      </section>
+    </main>
+
+  </body>
+</html>
