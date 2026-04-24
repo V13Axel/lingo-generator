@@ -75,4 +75,3 @@ export function aAn(nextWord, irregulars) {
 function isVowel(ch) {
   return VOWELS.has(ch.toLowerCase());
 }
-export { isVowel as _isVowel };
