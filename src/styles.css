@@ -1,5 +1,12 @@
 @import "tailwindcss";
 
+/* Scope Tailwind's content scan to files that actually contain class names.
+   Without this, v4's auto-scanner picks up class-shaped tokens from JS files
+   (e.g. "start" from `Alpine.start()`, "ring" from any identifier) and
+   generates unused utilities, making the CSS bundle non-deterministic
+   across rebuilds. */
+@source "../index.html";
+
 /* Accent color exposed as a CSS custom property so the theme can be swapped
    later without touching markup. The checkbox and button both read this. */
 :root {
