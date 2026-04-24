@@ -132,14 +132,15 @@
           <template x-for="(item, idx) in history" :key="item.id">
             <li
               class="flex items-baseline justify-between gap-4 p-2 rounded
-                     bg-white dark:bg-slate-800 shadow-sm"
+                     bg-white dark:bg-slate-800 shadow-sm cursor-pointer group"
               :class="idx === 0 ? 'fade-in' : ''"
+              @click="copyToClipboard(item.phrase)"
             >
               <span x-text="item.phrase" class="break-words"></span>
-              <span
-                class="text-xs text-slate-500 dark:text-slate-400 shrink-0"
-                x-text="'· ' + categoryLabel(item.category)"
-              ></span>
+              <span class="text-xs text-slate-500 dark:text-slate-400 shrink-0">
+                <span class="group-hover:hidden" x-text="'· ' + categoryLabel(item.category)"></span>
+                <span class="hidden group-hover:inline text-accent">Click to copy</span>
+              </span>
             </li>
           </template>
         </ul>

@@ -112,6 +112,10 @@ export function lingoApp() {
       this.history = [];
     },
 
+    copyToClipboard(text) {
+      navigator.clipboard.writeText(text);
+    },
+
     categoryLabel(key) {
       return {
         person: 'person',
