@@ -1,9 +1,9 @@
 [
-  "{person}",
+  "{a/an} {person}",
   "{a/an} {adjective} {person}",
-  "{person} from next door",
-  "{a/an} {adjective} {noun}-lover",
+  "the {adjective} {person}",
+  "my {adjective} neighbor",
   "someone who {verb}s {adverb}",
   "the {adjective} one",
-  "my {adjective} {person}"
+  "{a/an} {person} from next door"
 ]

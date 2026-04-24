@@ -12,8 +12,8 @@
       }
       .fade-in { animation: fade-in 150ms ease-out; }
     </style>
-    <script type="module" crossorigin src="/lingo-generator/assets/index-YdSnShYr.js"></script>
-    <link rel="stylesheet" crossorigin href="/lingo-generator/assets/index-DJPFOa76.css">
+    <script type="module" crossorigin src="/lingo-generator/assets/index-Bjnr4rHk.js"></script>
+    <link rel="stylesheet" crossorigin href="/lingo-generator/assets/index-WuYdKJoU.css">
   </head>
   <body class="min-h-screen bg-slate-50 text-slate-900 dark:bg-slate-900 dark:text-slate-100">
     <main
@@ -54,7 +54,9 @@
           <button
             class="w-full bg-accent text-accent-fg px-4 py-2 rounded font-medium
                    disabled:opacity-50 disabled:cursor-not-allowed
-                   focus:outline-none focus:ring-2 ring-accent"
+                   focus:outline-none focus-visible:ring-2 ring-accent
+                   focus-visible:ring-offset-2 ring-offset-slate-50
+                   dark:ring-offset-slate-900"
             :disabled="!canSuggest"
             @click="suggest()"
             x-text="loading ? 'Loading…' : 'Suggest'"
