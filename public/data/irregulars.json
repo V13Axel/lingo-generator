@@ -76,7 +76,8 @@
     "write": "wrote",
     "hop": "hopped",
     "sprint": "sprinted",
-    "skip": "skipped"
+    "skip": "skipped",
+    "eavesdrop": "eavesdropped"
   },
   "ing": {
     "lie": "lying",
@@ -89,7 +90,8 @@
     "skip": "skipping",
     "begin": "beginning",
     "forget": "forgetting",
-    "regret": "regretting"
+    "regret": "regretting",
+    "eavesdrop": "eavesdropping"
   },
   "articles": {
     "honest": "an",
