@@ -79,8 +79,19 @@ export function lingoApp() {
       return Object.values(this.categories).some(Boolean);
     },
 
+    get allCategoriesChecked() {
+      return Object.values(this.categories).every(Boolean);
+    },
+
     get canSuggest() {
       return !this.loading && !this.error && this.anyCategoryChecked;
+    },
+
+    toggleAll() {
+      const newState = this.allCategoriesChecked ? false : true;
+      for (const key of Object.keys(this.categories)) {
+        this.categories[key] = newState;
+      }
     },
 
     suggest() {
@@ -98,10 +109,7 @@ export function lingoApp() {
     },
 
     clearHistory() {
-      if (this.history.length === 0) return;
-      if (confirm('Clear all suggestion history?')) {
-        this.history = [];
-      }
+      this.history = [];
     },
 
     categoryLabel(key) {

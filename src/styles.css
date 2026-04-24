@@ -34,3 +34,17 @@
 @utility accent-themed {
   accent-color: var(--accent);
 }
+
+/* Toggle button styles for category selection */
+.toggle-btn {
+  transition: all 0.15s ease;
+}
+
+.toggle-btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--accent), 0 0 0 4px var(--tw-ring-offset-color);
+}
+
+.toggle-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
