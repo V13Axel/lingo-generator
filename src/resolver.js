@@ -1,8 +1,11 @@
 // Template resolver. Pure functions; no DOM, no Alpine, no fetch.
 
-import { pluralize, ing, past } from './inflect.js';
+import { pluralize, ing, past, aAn } from './inflect.js';
 
 const PLACEHOLDER = /\{([^{}]+)\}/g;
+// Sentinel marks {a/an} positions during the first pass; the post-pass
+// scans for it and chooses "a" or "an" based on the following word.
+const ARTICLE_SENTINEL = '\u0000A/AN\u0000';
 const MAX_DEPTH = 5;
 const MAX_ATTEMPTS = 10;
 
@@ -27,7 +30,6 @@ function pickFrom(list, rand) {
 function pickFromFlat(list, rand) {
   const flat = list.filter((w) => !w.includes('{'));
   if (flat.length === 0) {
-    // Last-resort: strip braces from a random pick so nothing leaks.
     return pickFrom(list, rand).replace(/[{}]/g, '');
   }
   return pickFrom(flat, rand);
@@ -50,7 +52,9 @@ function resolveOnce(template, data, rand, depth, flatMode) {
   return template.replace(PLACEHOLDER, (_match, inner) => {
     const p = parsePlaceholder(inner);
     if (p.kind === 'article') {
-      throw new Error('a/an not yet implemented');
+      // Leave a sentinel; settle it in the post-pass so the "next word" can
+      // include the result of later placeholder resolution.
+      return ARTICLE_SENTINEL;
     }
     const list = data.words[p.category];
     if (!list) throw new Error(`unknown category: ${p.category}`);
@@ -67,14 +71,35 @@ function resolveOnce(template, data, rand, depth, flatMode) {
   });
 }
 
+/**
+ * Replace every ARTICLE_SENTINEL with "a" or "an" based on the next word.
+ * The "next word" scan skips any whitespace or non-letter characters so
+ * templates like "({a/an} {noun})" or "{a/an}-{noun}" work correctly.
+ */
+function resolveArticles(text, irregulars) {
+  // Global scan. We look up to the next letter run after each sentinel.
+  return text.replace(new RegExp(ARTICLE_SENTINEL, 'g'), (_m, offset) => {
+    const after = text.slice(offset + ARTICLE_SENTINEL.length);
+    const nextWordMatch = after.match(/[A-Za-z][A-Za-z']*/);
+    const next = nextWordMatch ? nextWordMatch[0] : '';
+    return aAn(next, irregulars);
+  });
+}
+
 export function resolveTopLevel(template, data, rand = Math.random) {
+  let firstPass;
+  let succeeded = false;
   for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt += 1) {
     try {
-      return resolveOnce(template, data, rand, 0, false);
+      firstPass = resolveOnce(template, data, rand, 0, false);
+      succeeded = true;
+      break;
     } catch (err) {
       if (!(err instanceof RecursionError)) throw err;
     }
   }
-  // Flat-mode last resort: never recurses, never throws RecursionError.
-  return resolveOnce(template, data, rand, 0, true);
+  if (!succeeded) {
+    firstPass = resolveOnce(template, data, rand, 0, true);
+  }
+  return resolveArticles(firstPass, data.irregulars);
 }

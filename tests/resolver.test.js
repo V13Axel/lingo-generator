@@ -157,3 +157,71 @@ test('recursion: output never contains raw braces (stress test)', () => {
     assert.ok(!out.includes('}'), `leaked '}' in: ${out}`);
   }
 });
+
+test('a/an: before vowel-initial word -> an', () => {
+  const data = {
+    words: { noun: ['apple'], adjective: [], verb: [], adverb: [], color: [], preposition: [], person: [] },
+    irregulars: { plurals: {}, past: {}, ing: {}, articles: {} },
+  };
+  assert.equal(resolveTopLevel('{a/an} {noun}', data, pickFirst), 'an apple');
+});
+
+test('a/an: before consonant-initial word -> a', () => {
+  const data = {
+    words: { noun: ['cat'], adjective: [], verb: [], adverb: [], color: [], preposition: [], person: [] },
+    irregulars: { plurals: {}, past: {}, ing: {}, articles: {} },
+  };
+  assert.equal(resolveTopLevel('{a/an} {noun}', data, pickFirst), 'a cat');
+});
+
+test('a/an: consults articles exception list', () => {
+  const data = {
+    words: { noun: ['honest'], adjective: [], verb: [], adverb: [], color: [], preposition: [], person: [] },
+    irregulars: { plurals: {}, past: {}, ing: {}, articles: { honest: 'an' } },
+  };
+  assert.equal(resolveTopLevel('{a/an} {noun}', data, pickFirst), 'an honest');
+});
+
+test('a/an: at end with no following word -> a', () => {
+  const data = {
+    words: { noun: [], adjective: [], verb: [], adverb: [], color: [], preposition: [], person: [] },
+    irregulars: { plurals: {}, past: {}, ing: {}, articles: {} },
+  };
+  assert.equal(resolveTopLevel('{a/an}', data, pickFirst), 'a');
+});
+
+test('a/an: inspects nested-resolution result', () => {
+  const data = {
+    words: {
+      noun: ['{adjective} elephant'],
+      adjective: ['enormous'],
+      verb: [], adverb: [], color: [], preposition: [], person: [],
+    },
+    irregulars: { plurals: {}, past: {}, ing: {}, articles: {} },
+  };
+  assert.equal(resolveTopLevel('{a/an} {noun}', data, pickFirst), 'an enormous elephant');
+});
+
+test('a/an: survives through a recursion boundary (nested template containing {a/an})', () => {
+  const data = {
+    words: {
+      person: ['{a/an} {adjective} friend'],
+      adjective: ['old'],
+      noun: [], verb: [], adverb: [], color: [], preposition: [],
+    },
+    irregulars: { plurals: {}, past: {}, ing: {}, articles: {} },
+  };
+  // Drawn person is a template with its own {a/an} token. That token's sentinel
+  // must bubble up through the outer resolve and be settled by the top-level
+  // post-pass.
+  assert.equal(resolveTopLevel('{person}', data, pickFirst), 'an old friend');
+});
+
+test('a/an: handles punctuation between sentinel and next word', () => {
+  // Template author uses "({a/an} {noun})". The paren must not trip the post-pass.
+  const data = {
+    words: { noun: ['apple'], adjective: [], verb: [], adverb: [], color: [], preposition: [], person: [] },
+    irregulars: { plurals: {}, past: {}, ing: {}, articles: {} },
+  };
+  assert.equal(resolveTopLevel('({a/an} {noun})', data, pickFirst), '(an apple)');
+});
